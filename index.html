@@ -1,29 +1,90 @@
-<div class="main-panel">
-    <div class="blocks-palette">
-        <h3>Доступные блоки</h3>
-        <div class="block-item" draggable="true" data-type="variable">📦 Объявление переменной</div>
-        <div class="block-item" draggable="true" data-type="assignment">📝 Присваивание</div>
-        <div class="block-item" draggable="true" data-type="if">🔀 Условный оператор If</div>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codeblock Interpreter | Модуль 1</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🧩 Codeblock Interpreter</h1>
+            <p class="subtitle">Модуль 1: Основа (переменные, присваивание, арифметика, if)</p>
+        </header>
+        
+<main>
+    <div class="main-panel">
+        <!-- Левая панель с блоками -->
+        <div class="blocks-palette">
+            <h3>📦 Палитра блоков</h3>
+            <div class="palette-category">
+                <h4>Переменные</h4>
+                <div class="block-item" draggable="true" data-type="variable-decl">
+                    <span class="block-icon">📋</span>
+                    <span class="block-text">Объявить переменную</span>
+                </div>
+            </div>
+            
+            <div class="palette-category">
+                <h4>Операции</h4>
+                <div class="block-item" draggable="true" data-type="assignment">
+                    <span class="block-icon">📝</span>
+                    <span class="block-text">Присваивание</span>
+                </div>
+            </div>
+            
+            <div class="palette-category">
+                <h4>Управление</h4>
+                <div class="block-item" draggable="true" data-type="if-statement">
+                    <span class="block-icon">🔀</span>
+                    <span class="block-text">Условие If</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Центральная рабочая область -->
+        <div class="workspace">
+            <div class="workspace-header">
+                <h3>⚡ Рабочая область</h3>
+                <div class="workspace-controls">
+                    <button class="btn btn-sm" onclick="clearWorkspace()">Очистить</button>
+                </div>
+            </div>
+            <div class="program-area" id="programArea">
+                <div class="drop-zone">
+                    Перетащите блоки сюда
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правая панель информации -->
+        <div class="info-panel">
+            <h3>ℹ️ Информация</h3>
+            <div class="variables-panel">
+                <h4>Переменные:</h4>
+                <div id="variablesList" class="variables-list">
+                    <span class="empty-state">Нет переменных</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="workspace">
-        <h3>Рабочая область</h3>
-        <div class="program-area" id="programArea"></div>
+    <!-- Нижняя панель с выводом -->
+    <div class="output-panel">
+        <div class="output-header">
+            <h3>📟 Вывод программы</h3>
+            <div class="output-controls">
+                <button class="btn btn-primary" onclick="executeProgram()">▶ Запустить</button>
+                <button class="btn btn-danger" onclick="clearOutput()">Очистить</button>
+            </div>
+        </div>
+        <div class="console-output" id="consoleOutput">
+            <span class="prompt">$</span> Готов к выполнению...
+        </div>
     </div>
-</div>
-
-<div class="output-panel">
-    <div class="variables-panel">
-        <h4>📊 Текущие переменные:</h4>
-        <div class="variables-list" id="variablesList"></div>
+</main>
     </div>
-
-    <div class="execution-controls">
-        <button class="btn-execute" onclick="executeProgram()">▶ Выполнить</button>
-        <button class="btn-clear" onclick="clearProgram()">🗑 Очистить</button>
-    </div>
-
-    <div class="console-output" id="consoleOutput">
-        > Готов к выполнению...
-    </div>
-</div>
+    <script src="js/app.js"></script>
+</body>
+</html>
