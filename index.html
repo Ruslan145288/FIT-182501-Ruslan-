@@ -1,19 +1,29 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codeblock Interpreter</title>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-    <div id="app">
-        <h1>🧩 Codeblock Interpreter</h1>
-        <div id="main-container"></div>
+<div class="main-panel">
+    <div class="blocks-palette">
+        <h3>Доступные блоки</h3>
+        <div class="block-item" draggable="true" data-type="variable">📦 Объявление переменной</div>
+        <div class="block-item" draggable="true" data-type="assignment">📝 Присваивание</div>
+        <div class="block-item" draggable="true" data-type="if">🔀 Условный оператор If</div>
     </div>
-    <script src="js/interpreter.js"></script>
-    <script src="js/blocks.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/app.js"></script>
-</body>
-</html>
+
+    <div class="workspace">
+        <h3>Рабочая область</h3>
+        <div class="program-area" id="programArea"></div>
+    </div>
+</div>
+
+<div class="output-panel">
+    <div class="variables-panel">
+        <h4>📊 Текущие переменные:</h4>
+        <div class="variables-list" id="variablesList"></div>
+    </div>
+
+    <div class="execution-controls">
+        <button class="btn-execute" onclick="executeProgram()">▶ Выполнить</button>
+        <button class="btn-clear" onclick="clearProgram()">🗑 Очистить</button>
+    </div>
+
+    <div class="console-output" id="consoleOutput">
+        > Готов к выполнению...
+    </div>
+</div>
