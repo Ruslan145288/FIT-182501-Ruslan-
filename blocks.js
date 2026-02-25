@@ -49,4 +49,17 @@ class BlockManager {
             }
         });
     }
+
+    getBlock(id) {
+        return this.blocks.find(b => b.id === id);
+    }
+
+    updateBlock(id, newData) {
+        const block = this.getBlock(id);
+        if (block) {
+            block.data = { ...block.data, ...newData };
+            return true;
+        }
+        return false;
+    }
 }
