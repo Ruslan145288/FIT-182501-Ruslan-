@@ -17,7 +17,6 @@ class UIManager {
         div.className = `program-block ${this.getBlockClass(block.type)}`;
         div.dataset.blockId = block.id;
 
-        // Header
         const header = document.createElement('div');
         header.className = 'block-header';
         header.innerHTML = `
@@ -28,7 +27,6 @@ class UIManager {
             </div>
         `;
 
-        // Content
         const content = document.createElement('div');
         content.className = 'block-content';
         content.appendChild(this.createBlockContent(block));
@@ -100,11 +98,7 @@ class UIManager {
     }
 
     updateBlockData(blockId, field, value) {
-        const block = this.blockManager.blocks.find(b => b.id === blockId);
-        if (block) {
-            if (!block.data) block.data = {};
-            block.data[field] = value;
-        }
+        this.blockManager.updateBlock(blockId, { [field]: value });
     }
 
     deleteBlock(blockId) {
