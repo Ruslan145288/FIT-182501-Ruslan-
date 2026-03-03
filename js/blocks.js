@@ -1,7 +1,11 @@
 const BlockTypes = {
     VARIABLE: 'variable',
     ASSIGNMENT: 'assignment',
-    IF: 'if'
+    IF: 'if',
+    WHILE: 'while',
+    ARRAY_DECL: 'array-decl',
+    ARRAY_ASSIGN: 'array-assign',
+    LOGICAL: 'logical'
 };
 
 class BlockManager {
@@ -18,6 +22,17 @@ class BlockManager {
             nestedBlocks: nestedBlocks
         };
         this.blocks.push(block);
+        return block;
+    }
+
+    insertBlockAt(type, data, index, nestedBlocks = []) {
+        const block = {
+            id: this.blockId++,
+            type: type,
+            data: data,
+            nestedBlocks: nestedBlocks
+        };
+        this.blocks.splice(index, 0, block);
         return block;
     }
 
@@ -38,6 +53,25 @@ class BlockManager {
                     throw new Error('Неполный блок If');
                 }
                 break;
+                        case BlockTypes.WHILE:
+                if (!block.data.leftExpr || !block.data.rightExpr || !block.data.operator) {
+                    throw new Error('Неполный блок While');
+                }
+                break;
+            case BlockTypes.ARRAY_DECL:
+                if (!block.data.name) throw new Error('Не указано имя массива');
+                if (!block.data.size || isNaN(block.data.size)) throw new Error('Некорректный размер массива');
+                break;
+            case BlockTypes.ARRAY_ASSIGN:
+                if (!block.data.arrayName || !block.data.index || block.data.value === undefined) {
+                    throw new Error('Неполный блок присваивания массиву');
+                }
+                break;
+            case BlockTypes.LOGICAL:
+                if (!block.data.leftExpr || !block.data.rightExpr || !block.data.logicalOp) {
+                    throw new Error('Неполный логический блок');
+                }
+                break;
         }
     }
 
@@ -50,9 +84,9 @@ class BlockManager {
         });
     }
 
-    getBlock(id) {
-        return this.blocks.find(b => b.id === id);
-    }
+    getBlockIndex(blockId) {
+        return this.blocks.findIndex(b => b.id === blockId);
+    }   
 
     updateBlock(id, newData) {
         const block = this.getBlock(id);
