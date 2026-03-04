@@ -26,6 +26,15 @@
                 </div>
             </div>
             
+            <!-- НОВАЯ КАТЕГОРИЯ: Арифметика -->
+            <div class="palette-category">
+                <h4>🧮 Арифметика</h4>
+                <div class="block-item" draggable="true" data-type="arithmetic">
+                    <span class="block-icon">➕</span>
+                    <span class="block-text">Арифметическая операция</span>
+                </div>
+            </div>
+            
             <div class="palette-category">
                 <h4>Операции</h4>
                 <div class="block-item" draggable="true" data-type="assignment">
@@ -74,9 +83,9 @@
     <div class="output-panel">
         <div class="output-header">
             <h3>📟 Вывод программы</h3>
-            <div class="output-controls">
-                <button class="btn btn-primary" onclick="executeProgram()">▶ Запустить</button>
-                <button class="btn btn-danger" onclick="clearOutput()">Очистить</button>
+            <div class="execution-controls">
+                <button class="btn-execute" onclick="executeProgram()">▶ Запустить</button>
+                <button class="btn-clear" onclick="clearOutput()">Очистить</button>
             </div>
         </div>
         <div class="console-output" id="consoleOutput">
