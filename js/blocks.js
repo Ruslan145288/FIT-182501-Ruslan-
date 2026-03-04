@@ -39,8 +39,6 @@ class BlockManager {
     validateBlock(block) {
         switch(block.type) {
             case BlockTypes.VARIABLE:
-                // Проверяем только при выполнении, а не при создании
-                // Разрешаем пустые поля для ввода
                 break;
                 
             case BlockTypes.ASSIGNMENT:
