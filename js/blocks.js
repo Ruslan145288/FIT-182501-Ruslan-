@@ -5,7 +5,8 @@ const BlockTypes = {
     WHILE: 'while',
     ARRAY_DECL: 'array-decl',
     ARRAY_ASSIGN: 'array-assign',
-    LOGICAL: 'logical'
+    LOGICAL: 'logical',
+    ARITHMETIC: 'arithmetic' // Новый тип для арифметики
 };
 
 class BlockManager {
@@ -39,6 +40,8 @@ class BlockManager {
     validateBlock(block) {
         switch(block.type) {
             case BlockTypes.VARIABLE:
+                // Проверяем только при выполнении, а не при создании
+                // Разрешаем пустые поля для ввода
                 break;
                 
             case BlockTypes.ASSIGNMENT:
@@ -73,6 +76,21 @@ class BlockManager {
             case BlockTypes.LOGICAL:
                 if (!block.data.leftExpr || !block.data.rightExpr || !block.data.logicalOp) {
                     throw new Error('Неполный логический блок');
+                }
+                break;
+                
+            case BlockTypes.ARITHMETIC:
+                if (!block.data.varName) {
+                    throw new Error('Не указана переменная для результата');
+                }
+                if (!block.data.leftExpr) {
+                    throw new Error('Не указано левое выражение');
+                }
+                if (!block.data.rightExpr && block.data.operator !== '') {
+                    throw new Error('Не указано правое выражение');
+                }
+                if (!block.data.operator) {
+                    throw new Error('Не выбран оператор');
                 }
                 break;
         }
