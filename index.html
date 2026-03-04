@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Codeblock Interpreter | Модуль 1</title>
+    <title>Codeblock Interpreter | С дебагом</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>🧩 Codeblock Interpreter</h1>
-            <p class="subtitle">Основа (переменные, присваивание, арифметика, if)</p>
+            <p class="subtitle">Переменные, арифметика, условия с поддержкой отладки</p>
         </header>
         
 <main>
@@ -18,15 +18,15 @@
         <!-- Левая панель с блоками -->
         <div class="blocks-palette">
             <h3>📦 Палитра блоков</h3>
+            
             <div class="palette-category">
-                <h4>Переменные</h4>
+                <h4>📋 Переменные</h4>
                 <div class="block-item" draggable="true" data-type="variable-decl">
                     <span class="block-icon">📋</span>
                     <span class="block-text">Объявить переменную</span>
                 </div>
             </div>
             
-            <!-- НОВАЯ КАТЕГОРИЯ: Арифметика -->
             <div class="palette-category">
                 <h4>🧮 Арифметика</h4>
                 <div class="block-item" draggable="true" data-type="arithmetic">
@@ -36,7 +36,7 @@
             </div>
             
             <div class="palette-category">
-                <h4>Операции</h4>
+                <h4>📝 Операции</h4>
                 <div class="block-item" draggable="true" data-type="assignment">
                     <span class="block-icon">📝</span>
                     <span class="block-text">Присваивание</span>
@@ -44,7 +44,7 @@
             </div>
             
             <div class="palette-category">
-                <h4>Управление</h4>
+                <h4>🔀 Управление</h4>
                 <div class="block-item" draggable="true" data-type="if">
                     <span class="block-icon">🔀</span>
                     <span class="block-text">Условие If</span>
@@ -57,7 +57,7 @@
             <div class="workspace-header">
                 <h3>⚡ Рабочая область</h3>
                 <div class="workspace-controls">
-                    <button class="btn btn-sm" onclick="clearWorkspace()">Очистить</button>
+                    <button class="btn btn-sm" onclick="clearWorkspace()">Очистить всё</button>
                 </div>
             </div>
             <div class="program-area" id="programArea">
@@ -83,13 +83,44 @@
     <div class="output-panel">
         <div class="output-header">
             <h3>📟 Вывод программы</h3>
-            <div class="execution-controls">
-                <button class="btn-execute" onclick="executeProgram()">▶ Запустить</button>
-                <button class="btn-clear" onclick="clearOutput()">Очистить</button>
+            <div style="display: flex; gap: 10px;">
+                <!-- 🔴 НОВАЯ КНОПКА: отладка -->
+                <button class="debug-toggle" onclick="uiManager.toggleDebugMode()">🐞 Режим отладки</button>
+                <div class="execution-controls">
+                    <button class="btn-execute" onclick="executeProgram()">▶ Запустить</button>
+                    <button class="btn-clear" onclick="clearOutput()">Очистить</button>
+                </div>
             </div>
         </div>
         <div class="console-output" id="consoleOutput">
             <span class="prompt">$</span> Готов к выполнению...
+        </div>
+    </div>
+
+    <!-- 🔴 НОВАЯ ПАНЕЛЬ: отладки -->
+    <div class="debug-panel" id="debugPanel" style="display: none;">
+        <div class="debug-header">
+            <h3>🐞 Панель отладки</h3>
+            <div class="debug-controls">
+                <button class="debug-btn" onclick="uiManager.toggleDebugMode()">⏻ Выключить</button>
+                <button class="debug-btn" onclick="uiManager.stepBack()">↩ Шаг назад</button>
+                <button class="debug-btn" onclick="uiManager.continueExecution()">▶ Продолжить</button>
+                <button class="debug-btn" onclick="uiManager.resetDebug()">⟲ Сброс</button>
+            </div>
+        </div>
+        <div class="debug-info">
+            <div class="debug-section">
+                <h4>🔴 Точки остановки</h4>
+                <div id="breakpointsList" class="debug-list">Кликните на блок + B</div>
+            </div>
+            <div class="debug-section">
+                <h4>📋 История выполнения</h4>
+                <div id="executionHistory" class="debug-list"></div>
+            </div>
+            <div class="debug-section">
+                <h4>👁️ Переменные сейчас</h4>
+                <div id="liveVariables" class="debug-list"></div>
+            </div>
         </div>
     </div>
 </main>
