@@ -1,109 +1,126 @@
-// Глобальные переменные объявляем ОДИН РАЗ в начале файла
-let blockManager;
-let interpreter;
-let uiManager;
+let blockManager;   
+let interpreter;     
+let uiManager;      
 
-// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 Инициализация...');
     
-    // Создаем экземпляры классов
-    blockManager = new BlockManager();
-    interpreter = new Interpreter();
-    uiManager = new UIManager(blockManager, interpreter);
+    blockManager = new BlockManager();     
+    interpreter = new Interpreter();       
+    uiManager = new UIManager(blockManager, interpreter); 
     
-    // Сохраняем в window для доступа из onclick
+    
     window.blockManager = blockManager;
     window.interpreter = interpreter;
     window.uiManager = uiManager;
     
-    // Инициализируем Drag & Drop
     initDragAndDrop();
     
-    // Начальная отрисовка
-    uiManager.renderBlocks();
-    uiManager.updateVariablesDisplay();
+    uiManager.renderBlocks();           
+    uiManager.updateVariablesDisplay();    
 });
 
-// Функции Drag & Drop
+
 function initDragAndDrop() {
-    // Делаем блоки в палитре перетаскиваемыми
+    // 1.  ПАЛИТРА БЛОКОВ (левую панель)
     document.querySelectorAll('.block-item').forEach(item => {
         item.addEventListener('dragstart', handleDragStart);
         item.addEventListener('drag', (e) => e.preventDefault());
     });
 
+    // 2.  РАБОЧУЮ ОБЛАСТЬ (куда тащим)
     const programArea = document.getElementById('programArea');
     
-    // Разрешаем сбрасывать в рабочую область
     programArea.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        programArea.classList.add('drag-over');
+        e.preventDefault();  
+        programArea.classList.add('drag-over'); 
     });
     
     programArea.addEventListener('dragleave', () => {
-        programArea.classList.remove('drag-over');
+        programArea.classList.remove('drag-over'); 
     });
     
     programArea.addEventListener('drop', handleDrop);
     
-    // Обработка перетаскивания внутри рабочей области
+    // 3.  ПЕРЕТАСКИВАНИЕ ВНУТРИ РАБОЧЕЙ ОБЛАСТИ
     programArea.addEventListener('dragover', handleDragOver);
     programArea.addEventListener('drop', handleInternalDrop);
     
-    // Создаем зону удаления
+    // 4.  ЗОНА УДАЛЕНИЯ 
     createDeleteZone();
 }
 
 function handleDragStart(e) {
-    // Если это блок из палитры
     if (e.target.classList.contains('block-item')) {
         e.dataTransfer.setData('text/plain', e.target.dataset.type);
         e.dataTransfer.effectAllowed = 'copy';
     }
+    
 }
 
+
+//  СБРОСА ИЗ ПАЛ
+
 function handleDrop(e) {
-    e.preventDefault();
+    e.preventDefault(); 
     const programArea = document.getElementById('programArea');
-    programArea.classList.remove('drag-over');
+    programArea.classList.remove('drag-over'); 
     
-    // Получаем тип блока из палитры
     const blockType = e.dataTransfer.getData('text/plain');
-    if (!blockType) return;
+    if (!blockType) return;  
     
-    // Создаем новый блок
+    // НОВЫЙ БЛОК в зависимости от типа
     let newBlock;
     switch(blockType) {
-        case 'variable-decl':
+        case 'variable-decl':  
             newBlock = blockManager.createBlock(BlockTypes.VARIABLE, { names: '' });
+            console.log('✅ Создан блок переменных:', newBlock);
             break;
-        case 'assignment':
+            
+        case 'assignment':     
             newBlock = blockManager.createBlock(BlockTypes.ASSIGNMENT, { variable: '', expression: '' });
+            console.log('✅ Создан блок присваивания:', newBlock);
             break;
-        case 'if':
+            
+        case 'if':             
             newBlock = blockManager.createBlock(BlockTypes.IF, { 
                 leftExpr: '', 
                 operator: '>', 
                 rightExpr: '' 
             }, []);
+            console.log('✅ Создан блок if:', newBlock);
+            break;
+            
+        case 'arithmetic':      
+            newBlock = blockManager.createBlock(BlockTypes.ARITHMETIC, { 
+                varName: '',
+                leftExpr: '',
+                operator: '+',
+                rightExpr: ''
+            });
+            console.log('✅ Создан арифметический блок:', newBlock);
             break;
     }
     
-    // Перерисовываем
+   
     uiManager.renderBlocks();
 }
+
+
+//  ПЕРЕТАСКИВАНИЯ ВНУТРИ РАБОЧЕЙ ОБЛАСТИ
 
 function handleDragOver(e) {
     e.preventDefault();
     const programArea = document.getElementById('programArea');
     
-    // Если это перетаскивание существующего блока
     const blockId = e.dataTransfer.getData('text/plain');
     if (blockId && !isNaN(parseInt(blockId))) {
-        programArea.classList.add('drag-over');
+        programArea.classList.add('drag-over'); 
     }
 }
+
+
+//  СБРОСА РАБОЧЕЙ ОБЛАСТИ
 
 function handleInternalDrop(e) {
     e.preventDefault();
@@ -113,17 +130,15 @@ function handleInternalDrop(e) {
     const blockId = e.dataTransfer.getData('text/plain');
     if (!blockId || isNaN(parseInt(blockId))) return;
     
-    // Находим блок, который перетаскиваем
     const draggedBlock = document.querySelector(`[data-block-id="${blockId}"]`);
     if (!draggedBlock) return;
     
-    // Находим позицию для вставки
     const blocks = [...programArea.querySelectorAll('.program-block')].filter(b => b !== draggedBlock);
     let insertBefore = null;
     
     for (let block of blocks) {
-        const rect = block.getBoundingClientRect();
-        const middle = rect.top + rect.height / 2;
+        const rect = block.getBoundingClientRect();  
+        const middle = rect.top + rect.height / 2;   
         
         if (e.clientY < middle) {
             insertBefore = block;
@@ -131,65 +146,68 @@ function handleInternalDrop(e) {
         }
     }
     
-    // Перемещаем в DOM
     if (insertBefore) {
-        programArea.insertBefore(draggedBlock, insertBefore);
+        programArea.insertBefore(draggedBlock, insertBefore); 
     } else {
-        programArea.appendChild(draggedBlock);
+        programArea.appendChild(draggedBlock); 
     }
     
-    // Обновляем порядок в данных
     const newOrder = [];
     programArea.querySelectorAll('.program-block').forEach(block => {
         newOrder.push(parseInt(block.dataset.blockId));
     });
     
-    // Пересортировываем blocks
     const blocksMap = new Map();
     blockManager.blocks.forEach(b => blocksMap.set(b.id, b));
     
     blockManager.blocks = newOrder.map(id => blocksMap.get(id)).filter(b => b);
+    console.log('📋 Новый порядок блоков:', blockManager.blocks);
 }
 
-// Создание зоны удаления
+
+//  ЗОНА УДАЛЕНИЯ
+
 function createDeleteZone() {
-    // Удаляем старую зону если есть
+
     const oldZone = document.querySelector('.delete-zone');
     if (oldZone) oldZone.remove();
     
-    // Создаем новую
     const zone = document.createElement('div');
     zone.className = 'delete-zone';
     zone.id = 'deleteZone';
     zone.innerHTML = '🗑️ Перетащите сюда для удаления';
     document.body.appendChild(zone);
     
-    // Добавляем обработчики для зоны удаления
     zone.addEventListener('dragover', (e) => {
         e.preventDefault();
-        zone.classList.add('show');
+        zone.classList.add('show');  
     });
     
     zone.addEventListener('dragleave', () => {
-        zone.classList.remove('show');
+        zone.classList.remove('show');  
     });
     
     zone.addEventListener('drop', (e) => {
         e.preventDefault();
-        zone.classList.remove('show');
+        zone.classList.remove('show'); 
         
+       
         const blockId = e.dataTransfer.getData('text/plain');
         if (blockId && !isNaN(parseInt(blockId)) && blockManager) {
+        
             blockManager.deleteBlock(parseInt(blockId));
+            
             uiManager.renderBlocks();
             uiManager.updateVariablesDisplay();
+            console.log('🗑️ Блок удален');
         }
     });
 }
 
-// Глобальные функции для кнопок
+
+//  кнопка "Запустить"
 window.executeProgram = function() {
-    interpreter.reset();
+    interpreter.reset();  
     const consoleOutput = document.getElementById('consoleOutput');
     consoleOutput.innerHTML = '<span class="prompt">$</span> Выполнение...<br>';
 
@@ -206,21 +224,28 @@ window.executeProgram = function() {
         uiManager.updateVariablesDisplay();
         consoleOutput.innerHTML += '<br>✅ Выполнение завершено!';
     } catch (error) {
+
         consoleOutput.innerHTML += `❌ Ошибка: ${error.message}`;
-        uiManager.highlightError();
+        uiManager.highlightError();  // Подсвечиваем проблемный блок
     }
 }
 
+
+// ОЧИСТКА РАБОЧЕЙ 
+
 window.clearWorkspace = function() {
     if (confirm('Очистить рабочую область?')) {
-        blockManager.blocks = [];
-        blockManager.blockId = 0;
-        interpreter.reset();
-        uiManager.renderBlocks();
-        uiManager.updateVariablesDisplay();
+        blockManager.blocks = [];        
+        blockManager.blockId = 0;        
+        interpreter.reset();            
+        uiManager.renderBlocks();        
+        uiManager.updateVariablesDisplay(); 
         document.getElementById('consoleOutput').innerHTML = '<span class="prompt">$</span> Рабочая область очищена';
     }
 }
+
+
+// ОЧИСТКА ВЫВОДА
 
 window.clearOutput = function() {
     document.getElementById('consoleOutput').innerHTML = '<span class="prompt">$</span> Готов к выполнению...';
