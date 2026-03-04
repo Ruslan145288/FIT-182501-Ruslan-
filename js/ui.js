@@ -10,6 +10,30 @@ class UIManager {
         this.blockManager.blocks.forEach(block => {
             this.programArea.appendChild(this.createBlockElement(block));
         });
+        
+        this.makeBlocksDraggable();
+    }
+
+    makeBlocksDraggable() {
+        document.querySelectorAll('.program-block').forEach(block => {
+            block.setAttribute('draggable', 'true');
+            
+            block.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', block.dataset.blockId);
+                e.dataTransfer.effectAllowed = 'move';
+                block.classList.add('dragging');
+                
+                const deleteZone = document.getElementById('deleteZone');
+                if (deleteZone) deleteZone.classList.add('show');
+            });
+            
+            block.addEventListener('dragend', (e) => {
+                block.classList.remove('dragging');
+                
+                const deleteZone = document.getElementById('deleteZone');
+                if (deleteZone) deleteZone.classList.remove('show');
+            });
+        });
     }
 
     createBlockElement(block) {
