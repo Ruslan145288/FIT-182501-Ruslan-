@@ -11,6 +11,7 @@ class UIManager {
             this.programArea.appendChild(this.createBlockElement(block));
         });
         
+        // Делаем блоки перетаскиваемыми после отрисовки
         this.makeBlocksDraggable();
     }
 
@@ -23,6 +24,7 @@ class UIManager {
                 e.dataTransfer.effectAllowed = 'move';
                 block.classList.add('dragging');
                 
+               
                 const deleteZone = document.getElementById('deleteZone');
                 if (deleteZone) deleteZone.classList.add('show');
             });
@@ -30,6 +32,7 @@ class UIManager {
             block.addEventListener('dragend', (e) => {
                 block.classList.remove('dragging');
                 
+              
                 const deleteZone = document.getElementById('deleteZone');
                 if (deleteZone) deleteZone.classList.remove('show');
             });
@@ -65,7 +68,9 @@ class UIManager {
         const classes = {
             [BlockTypes.VARIABLE]: 'variable-decl',
             [BlockTypes.ASSIGNMENT]: 'assignment',
-            [BlockTypes.IF]: 'if-block'
+            [BlockTypes.IF]: 'if-block',
+            [BlockTypes.LOGICAL]: 'logical',
+            [BlockTypes.ARITHMETIC]: 'arithmetic'
         };
         return classes[type] || '';
     }
@@ -74,7 +79,9 @@ class UIManager {
         const titles = {
             [BlockTypes.VARIABLE]: '📦 Объявление переменной',
             [BlockTypes.ASSIGNMENT]: '📝 Присваивание',
-            [BlockTypes.IF]: '🔀 Условный оператор If'
+            [BlockTypes.IF]: '🔀 Условный оператор If',
+            [BlockTypes.LOGICAL]: '🔣 Логический оператор',
+            [BlockTypes.ARITHMETIC]: '🧮 Арифметическая операция'
         };
         return titles[type] || 'Блок';
     }
@@ -116,6 +123,96 @@ class UIManager {
                     <span>)</span>
                 `;
                 break;
+                
+            case BlockTypes.LOGICAL:
+                if (block.data.logicalOp === '!') {
+                    container.innerHTML = `
+                        <div class="logical-expression">
+                            <span class="logical-operator-badge">!</span>
+                            <input type="text" placeholder="выражение" value="${block.data.expr || ''}" 
+                                   onchange="uiManager.updateBlockData(${block.id}, 'expr', this.value)" style="width:150px">
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="logical-expression">
+                            <input type="text" placeholder="выражение 1" value="${block.data.leftExpr || ''}" 
+                                   onchange="uiManager.updateBlockData(${block.id}, 'leftExpr', this.value)" style="width:120px">
+                            <span class="logical-operator-badge">${block.data.logicalOp || '&&'}</span>
+                            <input type="text" placeholder="выражение 2" value="${block.data.rightExpr || ''}" 
+                                   onchange="uiManager.updateBlockData(${block.id}, 'rightExpr', this.value)" style="width:120px">
+                        </div>
+                    `;
+                }
+                break;
+                
+            case BlockTypes.ARITHMETIC:
+                // контейнер для арифметического блока
+                const arithmeticDiv = document.createElement('div');
+                arithmeticDiv.className = 'arithmetic-expression';
+                
+                // Поле для переменной результата
+                const varInput = document.createElement('input');
+                varInput.type = 'text';
+                varInput.placeholder = 'переменная';
+                varInput.value = block.data.varName || '';
+                varInput.style.width = '90px';
+                varInput.onchange = (e) => this.updateBlockData(block.id, 'varName', e.target.value);
+                
+                // Знак равенства
+                const equalsSpan = document.createElement('span');
+                equalsSpan.textContent = '=';
+                equalsSpan.style.fontWeight = 'bold';
+                
+                // Левое выражение
+                const leftInput = document.createElement('input');
+                leftInput.type = 'text';
+                leftInput.placeholder = 'выражение';
+                leftInput.value = block.data.leftExpr || '';
+                leftInput.style.width = '100px';
+                leftInput.className = 'arithmetic-input';
+                leftInput.onchange = (e) => this.updateBlockData(block.id, 'leftExpr', e.target.value);
+                
+                // Селектор оператора
+                const operatorSelect = document.createElement('select');
+                operatorSelect.className = 'arithmetic-operator';
+                operatorSelect.onchange = (e) => this.updateBlockData(block.id, 'operator', e.target.value);
+                
+                const operators = ['+', '-', '*', '/'];
+                operators.forEach(op => {
+                    const option = document.createElement('option');
+                    option.value = op;
+                    option.textContent = op;
+                    option.selected = block.data.operator === op;
+                    operatorSelect.appendChild(option);
+                });
+                
+                // Правое выражение
+                const rightInput = document.createElement('input');
+                rightInput.type = 'text';
+                rightInput.placeholder = 'выражение';
+                rightInput.value = block.data.rightExpr || '';
+                rightInput.style.width = '100px';
+                rightInput.className = 'arithmetic-input';
+                rightInput.onchange = (e) => this.updateBlockData(block.id, 'rightExpr', e.target.value);
+                
+                // Собираем все элементы
+                arithmeticDiv.appendChild(varInput);
+                arithmeticDiv.appendChild(equalsSpan);
+                arithmeticDiv.appendChild(leftInput);
+                arithmeticDiv.appendChild(operatorSelect);
+                arithmeticDiv.appendChild(rightInput);
+                
+                container.appendChild(arithmeticDiv);
+                
+                // Добавляем превью
+                if (block.data.varName && block.data.leftExpr && block.data.rightExpr && block.data.operator) {
+                    const preview = document.createElement('div');
+                    preview.className = 'arithmetic-preview';
+                    preview.innerHTML = `📊 ${block.data.varName} = ${block.data.leftExpr} ${block.data.operator} ${block.data.rightExpr}`;
+                    container.appendChild(preview);
+                }
+                break;
         }
         
         return container;
@@ -128,6 +225,7 @@ class UIManager {
     deleteBlock(blockId) {
         this.blockManager.deleteBlock(blockId);
         this.renderBlocks();
+        this.updateVariablesDisplay();
     }
 
     editBlock(blockId) {
@@ -155,7 +253,14 @@ class UIManager {
             this.interpreter.variables.forEach((value, name) => {
                 const item = document.createElement('div');
                 item.className = 'variable-item';
-                item.textContent = `${name} = ${value}`;
+                
+                // Если значение - массив, отображаем его красиво
+                if (Array.isArray(value)) {
+                    item.textContent = `${name} = [${value.join(', ')}]`;
+                } else {
+                    item.textContent = `${name} = ${value}`;
+                }
+                
                 variablesList.appendChild(item);
             });
         }
