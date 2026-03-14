@@ -15,95 +15,86 @@
         
 <main>
     <div class="main-panel">
-        <!-- Левая панель с блоками -->
-        <div class="blocks-palette">
-    <h3>📦 Палитра блоков</h3>
-    
-    <div class="palette-category">
-        <h4>📋 Переменные</h4>
-        <div class="block-item" draggable="true" data-type="variable-decl">
-            <span class="block-icon">📋</span>
-            <span class="block-text">Объявить переменную</span>
-        </div>
-    </div>
-    
-    <div class="palette-category">
-        <h4>🧮 Арифметика</h4>
-        <div class="block-item" draggable="true" data-type="arithmetic">
-            <span class="block-icon">➕</span>
-            <span class="block-text">Арифметическая операция</span>
-        </div>
-    </div>
-    
-    <div class="palette-category">
-        <h4>📝 Операции</h4>
-        <div class="block-item" draggable="true" data-type="assignment">
-            <span class="block-icon">📝</span>
-            <span class="block-text">Присваивание</span>
-        </div>
-    </div>
-    
-    <div class="palette-category">
-        <h4>🔀 Управление</h4>
-        <div class="block-item" draggable="true" data-type="if">
-            <span class="block-icon">🔀</span>
-            <span class="block-text">Условие If-Else</span>
-        </div>    
-        <div class="block-item" draggable="true" data-type="while">
-            <span class="block-icon">🔄</span>
-            <span class="block-text">Цикл While</span>
-        </div>
-    </div>
-    
-    <div class="palette-category">
-        <h4>📚 Массивы</h4>
-        <div class="block-item" draggable="true" data-type="array-decl">
-            <span class="block-icon">📊</span>
-            <span class="block-text">Объявить массив</span>
-        </div>
-        <div class="block-item" draggable="true" data-type="array-assign">
-            <span class="block-icon">📝</span>
-            <span class="block-text">Присвоить элементу</span>
-        </div>
-    </div>
-</div>
-                <div class="block-item" draggable="true" data-type="if">
-                    <span class="block-icon">🔀</span>
-                    <span class="block-text">Условие If-Else</span>
-                </div>    
-                <div class="block-item" draggable="true" data-type="while">
-                    <span class="block-icon">🔄</span>
-                    <span class="block-text">Цикл While</span>
-                </div>
-            </div>
+    <!-- Левая панель с блоками -->
+    <div class="blocks-palette">
+        <h3>📦 Палитра блоков</h3>
         
-        <!-- Центральная рабочая область -->
-        <div class="workspace">
-            <div class="workspace-header">
-                <h3>⚡ Рабочая область</h3>
-                <div class="workspace-controls">
-                    <button class="btn btn-sm" onclick="clearWorkspace()">Очистить всё</button>
-                </div>
-            </div>
-            <div class="program-area" id="programArea">
-                <div class="drop-zone">
-                    Перетащите блоки сюда
-                </div>
+        <div class="palette-category">
+            <h4>📋 Переменные</h4>
+            <div class="block-item" draggable="true" data-type="variable-decl">
+                <span class="block-icon">📋</span>
+                <span class="block-text">Объявить переменную</span>
             </div>
         </div>
         
-        <!-- Правая панель информации -->
-        <div class="info-panel">
-            <h3>ℹ️ Информация</h3>
-            <div class="variables-panel">
-                <h4>Переменные:</h4>
-                <div id="variablesList" class="variables-list">
-                    <span class="empty-state">Нет переменных</span>
-                </div>
+        <div class="palette-category">
+            <h4>🧮 Арифметика</h4>
+            <div class="block-item" draggable="true" data-type="arithmetic">
+                <span class="block-icon">➕</span>
+                <span class="block-text">Арифметическая операция</span>
+            </div>
+        </div>
+        
+        <div class="palette-category">
+            <h4>📝 Операции</h4>
+            <div class="block-item" draggable="true" data-type="assignment">
+                <span class="block-icon">📝</span>
+                <span class="block-text">Присваивание</span>
+            </div>
+        </div>
+        
+        <div class="palette-category">
+            <h4>🔀 Управление</h4>
+            <div class="block-item" draggable="true" data-type="if">
+                <span class="block-icon">🔀</span>
+                <span class="block-text">Условие If-Else</span>
+            </div>    
+            <div class="block-item" draggable="true" data-type="while">
+                <span class="block-icon">🔄</span>
+                <span class="block-text">Цикл While</span>
+            </div>
+        </div>
+        
+        <div class="palette-category">
+            <h4>📚 Массивы</h4>
+            <div class="block-item" draggable="true" data-type="array-decl">
+                <span class="block-icon">📊</span>
+                <span class="block-text">Объявить массив</span>
+            </div>
+            <div class="block-item" draggable="true" data-type="array-assign">
+                <span class="block-icon">📝</span>
+                <span class="block-text">Присвоить элементу</span>
+            </div>
+        </div>
+    </div> <!-- ЗДЕСЬ ЗАКРЫВАЕТСЯ blocks-palette -->
+    
+    <!-- Центральная рабочая область -->
+    <div class="workspace">
+        <div class="workspace-header">
+            <h3>⚡ Рабочая область</h3>
+            <div class="workspace-controls">
+                <button class="btn btn-sm" onclick="clearWorkspace()">Очистить всё</button>
+            </div>
+        </div>
+        <div class="program-area" id="programArea">
+            <div class="drop-zone">
+                Перетащите блоки сюда
             </div>
         </div>
     </div>
-
+    
+    <!-- Правая панель информации -->
+    <div class="info-panel">
+        <h3>ℹ️ Информация</h3>
+        <div class="variables-panel">
+            <h4>Переменные:</h4>
+            <div id="variablesList" class="variables-list">
+                <span class="empty-state">Нет переменных</span>
+            </div>
+        </div>
+    </div>
+</div> 
+    
     <!-- Нижняя панель с выводом -->
     <div class="output-panel">
         <div class="output-header">
