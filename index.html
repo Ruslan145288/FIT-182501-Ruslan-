@@ -10,139 +10,127 @@
     <div class="container">
         <header>
             <h1>🧩 Codeblock Interpreter</h1>
-            <p class="subtitle">Переменные, арифметика, условия с поддержкой отладки</p>
+            <p class="subtitle">Переменные, арифметика, условия, IF-ELSE и отладка</p>
         </header>
         
-<main>
-    <div class="main-panel">
-    <!-- Левая панель с блоками -->
-    <div class="blocks-palette">
-        <h3>📦 Палитра блоков</h3>
-        
-        <div class="palette-category">
-            <h4>📋 Переменные</h4>
-            <div class="block-item" draggable="true" data-type="variable-decl">
-                <span class="block-icon">📋</span>
-                <span class="block-text">Объявить переменную</span>
-            </div>
-        </div>
-        
-        <div class="palette-category">
-            <h4>🧮 Арифметика</h4>
-            <div class="block-item" draggable="true" data-type="arithmetic">
-                <span class="block-icon">➕</span>
-                <span class="block-text">Арифметическая операция</span>
-            </div>
-        </div>
-        
-        <div class="palette-category">
-            <h4>📝 Операции</h4>
-            <div class="block-item" draggable="true" data-type="assignment">
-                <span class="block-icon">📝</span>
-                <span class="block-text">Присваивание</span>
-            </div>
-        </div>
-        
-        <div class="palette-category">
-            <h4>🔀 Управление</h4>
-            <div class="block-item" draggable="true" data-type="if">
-                <span class="block-icon">🔀</span>
-                <span class="block-text">Условие If-Else</span>
-            </div>    
-            <div class="block-item" draggable="true" data-type="while">
-                <span class="block-icon">🔄</span>
-                <span class="block-text">Цикл While</span>
-            </div>
-        </div>
-        
-        <div class="palette-category">
-            <h4>📚 Массивы</h4>
-            <div class="block-item" draggable="true" data-type="array-decl">
-                <span class="block-icon">📊</span>
-                <span class="block-text">Объявить массив</span>
-            </div>
-            <div class="block-item" draggable="true" data-type="array-assign">
-                <span class="block-icon">📝</span>
-                <span class="block-text">Присвоить элементу</span>
-            </div>
-        </div>
-    </div> <!-- ЗДЕСЬ ЗАКРЫВАЕТСЯ blocks-palette -->
-    
-    <!-- Центральная рабочая область -->
-    <div class="workspace">
-        <div class="workspace-header">
-            <h3>⚡ Рабочая область</h3>
-            <div class="workspace-controls">
-                <button class="btn btn-sm" onclick="clearWorkspace()">Очистить всё</button>
-            </div>
-        </div>
-        <div class="program-area" id="programArea">
-            <div class="drop-zone">
-                Перетащите блоки сюда
-            </div>
-        </div>
-    </div>
-    
-    <!-- Правая панель информации -->
-    <div class="info-panel">
-        <h3>ℹ️ Информация</h3>
-        <div class="variables-panel">
-            <h4>Переменные:</h4>
-            <div id="variablesList" class="variables-list">
-                <span class="empty-state">Нет переменных</span>
-            </div>
-        </div>
-    </div>
-</div> 
-    
-    <!-- Нижняя панель с выводом -->
-    <div class="output-panel">
-        <div class="output-header">
-            <h3>📟 Вывод программы</h3>
-            <div style="display: flex; gap: 10px;">
-                <!-- 🔴 НОВАЯ КНОПКА: отладка -->
-                <button class="debug-toggle" onclick="uiManager.toggleDebugMode()">🐞 Режим отладки</button>
-                <div class="execution-controls">
-                    <button class="btn-execute" onclick="executeProgram()">▶ Запустить</button>
-                    <button class="btn-clear" onclick="clearOutput()">Очистить</button>
+        <main>
+            <div class="main-panel">
+                <!-- Левая панель с блоками -->
+                <div class="blocks-palette">
+                    <h3>📦 Палитра блоков</h3>
+                    
+                    <div class="palette-category">
+                        <h4>📋 Переменные</h4>
+                        <div class="block-item" draggable="true" data-type="variable-decl">
+                            <span class="block-icon">📋</span>
+                            <span class="block-text">Объявить переменную</span>
+                        </div>
+                    </div>
+                    
+                    <div class="palette-category">
+                        <h4>🧮 Арифметика</h4>
+                        <div class="block-item" draggable="true" data-type="arithmetic">
+                            <span class="block-icon">➕</span>
+                            <span class="block-text">Арифметическая операция</span>
+                        </div>
+                    </div>
+                    
+                    <div class="palette-category">
+                        <h4>📝 Операции</h4>
+                        <div class="block-item" draggable="true" data-type="assignment">
+                            <span class="block-icon">📝</span>
+                            <span class="block-text">Присваивание</span>
+                        </div>
+                    </div>
+                    
+                    <div class="palette-category">
+                        <h4>🔀 Управление</h4>
+                        <div class="block-item" draggable="true" data-type="if">
+                            <span class="block-icon">🔀</span>
+                            <span class="block-text">Условие If</span>
+                        </div>
+                        <div class="block-item" draggable="true" data-type="ifelse">
+                            <span class="block-icon">🔀</span>
+                            <span class="block-text">Условие If-Else</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Центральная рабочая область -->
+                <div class="workspace">
+                    <div class="workspace-header">
+                        <h3>⚡ Рабочая область</h3>
+                        <div class="workspace-controls">
+                            <button class="btn btn-sm" onclick="clearWorkspace()">Очистить всё</button>
+                        </div>
+                    </div>
+                    <div class="program-area" id="programArea">
+                        <div class="drop-zone">
+                            Перетащите блоки сюда
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Правая панель информации -->
+                <div class="info-panel">
+                    <h3>ℹ️ Информация</h3>
+                    <div class="variables-panel">
+                        <h4>Переменные:</h4>
+                        <div id="variablesList" class="variables-list">
+                            <span class="empty-state">Нет переменных</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="console-output" id="consoleOutput">
-            <span class="prompt">$</span> Готов к выполнению...
-        </div>
-    </div>
 
-    <!-- 🔴 НОВАЯ ПАНЕЛЬ: отладки -->
-    <div class="debug-panel" id="debugPanel" style="display: none;">
-        <div class="debug-header">
-            <h3>🐞 Панель отладки</h3>
-            <div class="debug-controls">
-                <button class="debug-btn" onclick="uiManager.toggleDebugMode()">⏻ Выключить</button>
-                <button class="debug-btn" onclick="uiManager.stepBack()">↩ Шаг назад</button>
-                <button class="debug-btn" onclick="uiManager.continueExecution()">▶ Продолжить</button>
-                <button class="debug-btn" onclick="uiManager.resetDebug()">⟲ Сброс</button>
+            <!-- Нижняя панель с выводом -->
+            <div class="output-panel">
+                <div class="output-header">
+                    <h3>📟 Вывод программы</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="debug-toggle" onclick="toggleDebugMode()">🐞 Режим отладки</button>
+                        <div class="execution-controls">
+                            <button class="btn-execute" onclick="executeProgram()">▶ Запустить</button>
+                            <button class="btn-clear" onclick="clearOutput()">Очистить</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="console-output" id="consoleOutput">
+                    <span class="prompt">$</span> Готов к выполнению...
+                </div>
             </div>
-        </div>
-        <div class="debug-info">
-            <div class="debug-section">
-                <h4>🔴 Точки остановки</h4>
-                <div id="breakpointsList" class="debug-list">Кликните на блок + B</div>
+
+            <!-- Панель отладки -->
+            <div class="debug-panel" id="debugPanel" style="display: none;">
+                <div class="debug-header">
+                    <h3>🐞 Панель отладки</h3>
+                    <div class="debug-controls">
+                        <button class="debug-btn" onclick="toggleDebugMode()">⏻ Выключить</button>
+                        <button class="debug-btn" onclick="stepBack()">↩ Шаг назад</button>
+                        <button class="debug-btn" onclick="continueExecution()">▶ Продолжить</button>
+                        <button class="debug-btn" onclick="resetDebug()">⟲ Сброс</button>
+                    </div>
+                </div>
+                <div class="debug-info">
+                    <div class="debug-section">
+                        <h4>🔴 Точки остановки</h4>
+                        <div id="breakpointsList" class="debug-list">Кликните на блок + B</div>
+                    </div>
+                    <div class="debug-section">
+                        <h4>📋 История выполнения</h4>
+                        <div id="executionHistory" class="debug-list"></div>
+                    </div>
+                    <div class="debug-section">
+                        <h4>👁️ Переменные сейчас</h4>
+                        <div id="liveVariables" class="debug-list"></div>
+                    </div>
+                </div>
             </div>
-            <div class="debug-section">
-                <h4>📋 История выполнения</h4>
-                <div id="executionHistory" class="debug-list"></div>
-            </div>
-            <div class="debug-section">
-                <h4>👁️ Переменные сейчас</h4>
-                <div id="liveVariables" class="debug-list"></div>
-            </div>
-        </div>
+        </main>
     </div>
-</main>
-    </div>
-    <script src="js/interpreter.js"></script>
+    
     <script src="js/blocks.js"></script>
+    <script src="js/interpreter.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/app.js"></script>
 </body>
