@@ -2,6 +2,7 @@ const BlockTypes = {
     VARIABLE: 'variable',
     ASSIGNMENT: 'assignment',
     IF: 'if',
+    IFELSE: 'ifelse',
     ARITHMETIC: 'arithmetic'
 };
 
@@ -16,7 +17,10 @@ class BlockManager {
             id: this.blockId++,
             type: type,
             data: data,
-            nestedBlocks: [],
+            nestedBlocks: {
+                then: [],
+                else: []
+            },
             error: null
         };
         this.blocks.push(block);
@@ -29,7 +33,12 @@ class BlockManager {
         // Удаляем из вложенных блоков
         this.blocks.forEach(block => {
             if (block.nestedBlocks) {
-                block.nestedBlocks = block.nestedBlocks.filter(b => b.id !== blockId);
+                if (block.nestedBlocks.then) {
+                    block.nestedBlocks.then = block.nestedBlocks.then.filter(b => b.id !== blockId);
+                }
+                if (block.nestedBlocks.else) {
+                    block.nestedBlocks.else = block.nestedBlocks.else.filter(b => b.id !== blockId);
+                }
             }
         });
     }
@@ -38,8 +47,14 @@ class BlockManager {
         for (let block of this.blocks) {
             if (block.id === id) return block;
             if (block.nestedBlocks) {
-                const found = block.nestedBlocks.find(b => b.id === id);
-                if (found) return found;
+                if (block.nestedBlocks.then) {
+                    const found = block.nestedBlocks.then.find(b => b.id === id);
+                    if (found) return found;
+                }
+                if (block.nestedBlocks.else) {
+                    const found = block.nestedBlocks.else.find(b => b.id === id);
+                    if (found) return found;
+                }
             }
         }
         return null;
@@ -55,12 +70,13 @@ class BlockManager {
         return false;
     }
 
-    moveBlockToParent(blockId, parentId) {
+    moveBlockToParent(blockId, parentId, slotType = 'then') {
         const block = this.getBlock(blockId);
         const parent = this.getBlock(parentId);
         
         if (!block || !parent || block.id === parent.id) return false;
-        if (parent.type !== 'if') return false;
+        if (parent.type !== 'if' && parent.type !== 'ifelse') return false;
+        if (slotType !== 'then' && slotType !== 'else') return false;
         
         // Удаляем блок из текущего места
         this.blocks = this.blocks.filter(b => b.id !== blockId);
@@ -68,13 +84,20 @@ class BlockManager {
         // Удаляем из других родителей если был там
         this.blocks.forEach(p => {
             if (p.nestedBlocks) {
-                p.nestedBlocks = p.nestedBlocks.filter(b => b.id !== blockId);
+                if (p.nestedBlocks.then) {
+                    p.nestedBlocks.then = p.nestedBlocks.then.filter(b => b.id !== blockId);
+                }
+                if (p.nestedBlocks.else) {
+                    p.nestedBlocks.else = p.nestedBlocks.else.filter(b => b.id !== blockId);
+                }
             }
         });
         
         // Добавляем в нового родителя
-        if (!parent.nestedBlocks) parent.nestedBlocks = [];
-        parent.nestedBlocks.push(block);
+        if (!parent.nestedBlocks[slotType]) {
+            parent.nestedBlocks[slotType] = [];
+        }
+        parent.nestedBlocks[slotType].push(block);
         
         return true;
     }
@@ -83,25 +106,22 @@ class BlockManager {
         const block = this.getBlock(blockId);
         if (!block) return false;
         
-        // Сохраняем родителя если блок был вложенным
-        let oldParent = null;
-        for (let parent of this.blocks) {
+        // Удаляем из всех родителей
+        this.blocks.forEach(parent => {
             if (parent.nestedBlocks) {
-                const foundIndex = parent.nestedBlocks.findIndex(b => b.id === blockId);
-                if (foundIndex !== -1) {
-                    oldParent = parent;
-                    parent.nestedBlocks.splice(foundIndex, 1);
-                    break;
+                if (parent.nestedBlocks.then) {
+                    parent.nestedBlocks.then = parent.nestedBlocks.then.filter(b => b.id !== blockId);
+                }
+                if (parent.nestedBlocks.else) {
+                    parent.nestedBlocks.else = parent.nestedBlocks.else.filter(b => b.id !== blockId);
                 }
             }
-        }
+        });
         
-        // Если блок не был вложенным, удаляем из основного списка
-        if (!oldParent) {
-            const mainIndex = this.blocks.findIndex(b => b.id === blockId);
-            if (mainIndex !== -1) {
-                this.blocks.splice(mainIndex, 1);
-            }
+        // Удаляем из основного списка если был там
+        const mainIndex = this.blocks.findIndex(b => b.id === blockId);
+        if (mainIndex !== -1) {
+            this.blocks.splice(mainIndex, 1);
         }
         
         // Добавляем в основное место
@@ -145,6 +165,7 @@ class BlockManager {
                         break;
                         
                     case 'if':
+                    case 'ifelse':
                         if (!block.data.condition || !block.data.condition.trim()) {
                             throw new Error('Укажите условие');
                         }
@@ -170,7 +191,12 @@ class BlockManager {
             }
             
             if (block.nestedBlocks) {
-                block.nestedBlocks.forEach(validate);
+                if (block.nestedBlocks.then) {
+                    block.nestedBlocks.then.forEach(validate);
+                }
+                if (block.nestedBlocks.else) {
+                    block.nestedBlocks.else.forEach(validate);
+                }
             }
         };
         
