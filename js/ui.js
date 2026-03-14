@@ -88,6 +88,21 @@ if (block.type === BlockTypes.IF) {
     div.appendChild(elseContainer);
 }
 
+if (block.type === BlockTypes.WHILE) {
+    const bodyContainer = document.createElement('div');
+    bodyContainer.className = 'nested-blocks while-body';
+    bodyContainer.innerHTML = '<div class="nested-label">🔄 Тело цикла:</div>';
+    bodyContainer.id = `while-${block.id}`;
+    
+    if (block.nestedBlocks) {
+        block.nestedBlocks.forEach(nestedBlock => {
+            bodyContainer.appendChild(this.createBlockElement(nestedBlock));
+        });
+    }
+    
+    div.appendChild(bodyContainer);
+}
+
         return div;
     }
 
@@ -97,6 +112,7 @@ if (block.type === BlockTypes.IF) {
             [BlockTypes.ASSIGNMENT]: 'assignment',
             [BlockTypes.IF]: 'if-block',
             [BlockTypes.LOGICAL]: 'logical',
+            [BlockTypes.WHILE]: 'while-block',
             [BlockTypes.ARITHMETIC]: 'arithmetic'
         };
         return classes[type] || '';
@@ -108,6 +124,7 @@ if (block.type === BlockTypes.IF) {
             [BlockTypes.ASSIGNMENT]: '📝 Присваивание',
             [BlockTypes.IF]: '🔀 Условный оператор If',
             [BlockTypes.LOGICAL]: '🔣 Логический оператор',
+            [BlockTypes.WHILE]: '🔄 Цикл While',
             [BlockTypes.ARITHMETIC]: '🧮 Арифметическая операция'
         };
         return titles[type] || 'Блок';

@@ -100,6 +100,14 @@ function handleDrop(e) {
             });
             console.log('✅ Создан арифметический блок:', newBlock);
             break;
+        case 'while':
+            newBlock = blockManager.createBlock(BlockTypes.WHILE, { 
+                leftExpr: '', 
+                operator: '>', 
+                rightExpr: '' 
+            }, []); // пустой массив для вложенных блоков
+            console.log('✅ Создан блок while:', newBlock);
+            break;
     }
     
    
