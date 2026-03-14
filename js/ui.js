@@ -147,69 +147,37 @@ class UIManager {
                 break;
                 
             case BlockTypes.ARITHMETIC:
-                // контейнер для арифметического блока
                 const arithmeticDiv = document.createElement('div');
                 arithmeticDiv.className = 'arithmetic-expression';
-                
-                // Поле для переменной результата
+    
                 const varInput = document.createElement('input');
                 varInput.type = 'text';
                 varInput.placeholder = 'переменная';
                 varInput.value = block.data.varName || '';
                 varInput.style.width = '90px';
                 varInput.onchange = (e) => this.updateBlockData(block.id, 'varName', e.target.value);
-                
-                // Знак равенства
+    
                 const equalsSpan = document.createElement('span');
                 equalsSpan.textContent = '=';
                 equalsSpan.style.fontWeight = 'bold';
-                
-                // Левое выражение
-                const leftInput = document.createElement('input');
-                leftInput.type = 'text';
-                leftInput.placeholder = 'выражение';
-                leftInput.value = block.data.leftExpr || '';
-                leftInput.style.width = '100px';
-                leftInput.className = 'arithmetic-input';
-                leftInput.onchange = (e) => this.updateBlockData(block.id, 'leftExpr', e.target.value);
-                
-                // Селектор оператора
-                const operatorSelect = document.createElement('select');
-                operatorSelect.className = 'arithmetic-operator';
-                operatorSelect.onchange = (e) => this.updateBlockData(block.id, 'operator', e.target.value);
-                
-                const operators = ['+', '-', '*', '/'];
-                operators.forEach(op => {
-                    const option = document.createElement('option');
-                    option.value = op;
-                    option.textContent = op;
-                    option.selected = block.data.operator === op;
-                    operatorSelect.appendChild(option);
-                });
-                
-                // Правое выражение
-                const rightInput = document.createElement('input');
-                rightInput.type = 'text';
-                rightInput.placeholder = 'выражение';
-                rightInput.value = block.data.rightExpr || '';
-                rightInput.style.width = '100px';
-                rightInput.className = 'arithmetic-input';
-                rightInput.onchange = (e) => this.updateBlockData(block.id, 'rightExpr', e.target.value);
-                
-                // Собираем все элементы
+    
+                const exprInput = document.createElement('input');
+                exprInput.type = 'text';
+                exprInput.placeholder = 'выражение (например: x + 5 * 2)';
+                exprInput.value = block.data.expression || '';
+                exprInput.style.width = '200px';
+                exprInput.className = 'arithmetic-input';
+                exprInput.onchange = (e) => this.updateBlockData(block.id, 'expression', e.target.value);
+    
                 arithmeticDiv.appendChild(varInput);
                 arithmeticDiv.appendChild(equalsSpan);
-                arithmeticDiv.appendChild(leftInput);
-                arithmeticDiv.appendChild(operatorSelect);
-                arithmeticDiv.appendChild(rightInput);
-                
+                arithmeticDiv.appendChild(exprInput);
                 container.appendChild(arithmeticDiv);
-                
-                // Добавляем превью
-                if (block.data.varName && block.data.leftExpr && block.data.rightExpr && block.data.operator) {
+    
+                if (block.data.varName && block.data.expression) {
                     const preview = document.createElement('div');
                     preview.className = 'arithmetic-preview';
-                    preview.innerHTML = `📊 ${block.data.varName} = ${block.data.leftExpr} ${block.data.operator} ${block.data.rightExpr}`;
+                    preview.innerHTML = `📊 ${block.data.varName} = ${block.data.expression}`;
                     container.appendChild(preview);
                 }
                 break;

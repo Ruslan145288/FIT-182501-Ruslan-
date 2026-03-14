@@ -68,43 +68,18 @@ class Interpreter {
 
     executeArithmetic(block, variables) {
         const varName = block.data.varName;
-        const leftExpr = block.data.leftExpr;
-        const rightExpr = block.data.rightExpr;
-        const operator = block.data.operator;
-        
-        if (!variables.has(varName)) {
-            throw new Error(`Переменная "${varName}" не объявлена`);
-        }
-        
-        const leftValue = this.evaluateExpression(leftExpr, variables);
-        const rightValue = this.evaluateExpression(rightExpr, variables);
-        
-        let result;
-        switch(operator) {
-            case '+':
-                result = leftValue + rightValue;
-                break;
-            case '-':
-                result = leftValue - rightValue;
-                break;
-            case '*':
-                result = leftValue * rightValue;
-                break;
-            case '/':
-                if (rightValue === 0) {
-                    throw new Error('Деление на ноль');
-                }
-                result = leftValue / rightValue;
-                break;
-            default:
-                throw new Error(`Неизвестный оператор: ${operator}`);
-        }
-        
-        variables.set(varName, result);
-        this.output.push(`> ${varName} = ${leftValue} ${operator} ${rightValue} = ${result}`);
-        
-        return result;
+    const expression = block.data.expression; 
+    
+    if (!variables.has(varName)) {
+        throw new Error(`Переменная "${varName}" не объявлена`);
     }
+    
+    const result = this.evaluateExpression(expression, variables);
+    variables.set(varName, result);
+    this.output.push(`> ${varName} = ${expression} = ${result}`);
+    
+    return result;
+}
 
     executeBlock(block, context = {}) {
         const variables = context.variables || this.variables;
