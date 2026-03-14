@@ -7,3 +7,4 @@
 
 ## Установка
 https://ruslan145288.github.io/FIT-182501-Ruslan-/  - ссылка на сайт проекта 
+file:///C:/Users/User/OneDrive/Desktop/FIT-182501-Ruslan--main/index.html --
