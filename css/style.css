@@ -634,3 +634,41 @@ h1 {
     border-left-color: #2196f3 !important;
     background: rgba(33, 150, 243, 0.05) !important;
 }
+
+/* Стили для массивов */
+.array-decl {
+    background: #e1f5fe !important;
+    border-color: #03a9f4 !important;
+}
+
+.array-assign {
+    background: #fff9c4 !important;
+    border-color: #ffc107 !important;
+}
+
+/* Улучшенные стили для вложенных блоков */
+.nested-blocks {
+    margin-left: 30px;
+    padding: 15px;
+    border-left: 3px solid #9c27b0;
+    margin-top: 10px;
+    min-height: 60px;
+    background: rgba(156, 39, 176, 0.05);
+    border-radius: 0 8px 8px 0;
+    transition: all 0.3s;
+}
+
+.nested-blocks.drag-over {
+    background: rgba(76, 175, 80, 0.2) !important;
+    border-left-color: #4caf50 !important;
+    border-left-width: 5px;
+}
+
+.nested-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}

@@ -276,3 +276,90 @@ window.clearWorkspace = function() {
 window.clearOutput = function() {
     document.getElementById('consoleOutput').innerHTML = '<span class="prompt">$</span> Готов к выполнению...';
 }
+
+// Обработка перетаскивания в контейнеры then/else/while
+function setupNestedDropZones() {
+    document.querySelectorAll('.nested-blocks').forEach(zone => {
+        // Удаляем старые обработчики
+        zone.removeEventListener('dragover', handleNestedDragOver);
+        zone.removeEventListener('dragleave', handleNestedDragLeave);
+        zone.removeEventListener('drop', handleNestedDrop);
+        
+        // Добавляем новые
+        zone.addEventListener('dragover', handleNestedDragOver);
+        zone.addEventListener('dragleave', handleNestedDragLeave);
+        zone.addEventListener('drop', handleNestedDrop);
+    });
+}
+
+function handleNestedDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleNestedDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+}
+
+function handleNestedDrop(e) {
+    e.preventDefault();
+    const zone = e.currentTarget;
+    zone.classList.remove('drag-over');
+    
+    const blockId = e.dataTransfer.getData('text/plain');
+    if (!blockId) return;
+    
+    // Определяем, это новый блок из палитры или существующий
+    const isNewBlock = isNaN(parseInt(blockId));
+    
+    if (isNewBlock) {
+        // Создаем новый блок из палитры
+        const blockType = blockId;
+        let newBlock;
+        
+        switch(blockType) {
+            case 'variable-decl':
+                newBlock = blockManager.createBlock(BlockTypes.VARIABLE, { names: '' });
+                break;
+            case 'assignment':
+                newBlock = blockManager.createBlock(BlockTypes.ASSIGNMENT, { variable: '', expression: '' });
+                break;
+            case 'arithmetic':
+                newBlock = blockManager.createBlock(BlockTypes.ARITHMETIC, { varName: '', expression: '' });
+                break;
+            case 'array-decl':
+                newBlock = blockManager.createBlock(BlockTypes.ARRAY_DECL, { name: '', size: '5', initValue: '0' });
+                break;
+            case 'array-assign':
+                newBlock = blockManager.createBlock(BlockTypes.ARRAY_ASSIGN, { arrayName: '', index: '0', value: '' });
+                break;
+            default:
+                return;
+        }
+        
+        // Находим родительский if/while блок
+        const parentBlockElement = zone.closest('.program-block');
+        if (parentBlockElement) {
+            const parentId = parseInt(parentBlockElement.dataset.blockId);
+            const parentBlock = blockManager.getBlock(parentId);
+            
+            if (parentBlock) {
+                if (zone.classList.contains('then-blocks')) {
+                    if (!parentBlock.nestedBlocks.then) parentBlock.nestedBlocks.then = [];
+                    parentBlock.nestedBlocks.then.push(newBlock);
+                } else if (zone.classList.contains('else-blocks')) {
+                    if (!parentBlock.nestedBlocks.else) parentBlock.nestedBlocks.else = [];
+                    parentBlock.nestedBlocks.else.push(newBlock);
+                } else if (zone.classList.contains('while-body')) {
+                    if (!parentBlock.nestedBlocks) parentBlock.nestedBlocks = [];
+                    parentBlock.nestedBlocks.push(newBlock);
+                }
+            }
+        }
+        
+        uiManager.renderBlocks();
+    }
+}
+
+// ВАЖНО: нужно модифицировать существующий метод renderBlocks
+// Найди в ui.js метод renderBlocks и ЗАМЕНИ его на этот:

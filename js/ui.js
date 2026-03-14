@@ -10,9 +10,12 @@ class UIManager {
         this.blockManager.blocks.forEach(block => {
             this.programArea.appendChild(this.createBlockElement(block));
         });
-        
-        // Делаем блоки перетаскиваемыми после отрисовки
+   
         this.makeBlocksDraggable();
+    
+        if (typeof setupNestedDropZones === 'function') {
+            setupNestedDropZones();
+        }
     }
 
     makeBlocksDraggable() {
@@ -128,8 +131,8 @@ if (block.type === BlockTypes.WHILE) {
             [BlockTypes.LOGICAL]: '🔣 Логический оператор',
             [BlockTypes.WHILE]: '🔄 Цикл While',
             [BlockTypes.ARRAY_DECL]: '📊 Объявление массива',
-            [BlockTypes.ARRAY_ASSIGN]: '📝 Присваивание элементу'
-            [BlockTypes.ARITHMETIC]: '🧮 Арифметическая операция'
+            [BlockTypes.ARRAY_ASSIGN]: '📝 Присваивание элементу',
+            [BlockTypes.ARITHMETIC]: '🧮 Арифметическая операция',
         };
         return titles[type] || 'Блок';
     }
