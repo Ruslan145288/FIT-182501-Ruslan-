@@ -65,6 +65,9 @@ class Interpreter {
             case 'if':
                 this.executeIf(block);
                 break;
+            case 'ifelse':
+                this.executeIfElse(block);
+                break;
             case 'arithmetic':
                 this.executeArithmetic(block);
                 break;
@@ -98,13 +101,41 @@ class Interpreter {
         const result = this.evaluateCondition(condition, this.variables);
         this.output.push(`> Проверка условия: ${condition} = ${result}`);
 
-        if (result && block.nestedBlocks && block.nestedBlocks.length > 0) {
-            this.output.push(`> Условие истинно, выполняем вложенные блоки:`);
-            block.nestedBlocks.forEach(nestedBlock => {
+        if (result && block.nestedBlocks.then && block.nestedBlocks.then.length > 0) {
+            this.output.push(`> Условие истинно, выполняем блок THEN:`);
+            block.nestedBlocks.then.forEach(nestedBlock => {
                 this.executeBlock(nestedBlock);
             });
         } else if (!result) {
-            this.output.push(`> Условие ложно, пропускаем вложенные блоки`);
+            this.output.push(`> Условие ложно, пропускаем`);
+        }
+    }
+
+    executeIfElse(block) {
+        const condition = block.data.condition;
+        if (!condition) return;
+        
+        const result = this.evaluateCondition(condition, this.variables);
+        this.output.push(`> Проверка условия: ${condition} = ${result}`);
+
+        if (result) {
+            if (block.nestedBlocks.then && block.nestedBlocks.then.length > 0) {
+                this.output.push(`> Условие истинно, выполняем блок THEN:`);
+                block.nestedBlocks.then.forEach(nestedBlock => {
+                    this.executeBlock(nestedBlock);
+                });
+            } else {
+                this.output.push(`> Условие истинно, но блок THEN пуст`);
+            }
+        } else {
+            if (block.nestedBlocks.else && block.nestedBlocks.else.length > 0) {
+                this.output.push(`> Условие ложно, выполняем блок ELSE:`);
+                block.nestedBlocks.else.forEach(nestedBlock => {
+                    this.executeBlock(nestedBlock);
+                });
+            } else {
+                this.output.push(`> Условие ложно, но блок ELSE пуст`);
+            }
         }
     }
 
