@@ -612,3 +612,25 @@ h1 {
     width: 0%;
     transition: width 0.3s;
 }
+
+.nested-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.then-blocks {
+    border-left-color: #4caf50 !important;
+    background: rgba(76, 175, 80, 0.05) !important;
+}
+
+.else-blocks {
+    border-left-color: #f44336 !important;
+    background: rgba(244, 67, 54, 0.05) !important;
+}
+
+.while-body {
+    border-left-color: #2196f3 !important;
+    background: rgba(33, 150, 243, 0.05) !important;
+}

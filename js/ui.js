@@ -61,6 +61,33 @@ class UIManager {
         div.appendChild(header);
         div.appendChild(content);
 
+if (block.type === BlockTypes.IF) {
+    const thenContainer = document.createElement('div');
+    thenContainer.className = 'nested-blocks then-blocks';
+    thenContainer.innerHTML = '<div class="nested-label">✅ THEN:</div>';
+    thenContainer.id = `then-${block.id}`;
+    
+    const elseContainer = document.createElement('div');
+    elseContainer.className = 'nested-blocks else-blocks';
+    elseContainer.innerHTML = '<div class="nested-label">❌ ELSE:</div>';
+    elseContainer.id = `else-${block.id}`;
+    
+    if (block.nestedBlocks && block.nestedBlocks.then) {
+        block.nestedBlocks.then.forEach(nestedBlock => {
+            thenContainer.appendChild(this.createBlockElement(nestedBlock));
+        });
+    }
+    
+    if (block.nestedBlocks && block.nestedBlocks.else) {
+        block.nestedBlocks.else.forEach(nestedBlock => {
+            elseContainer.appendChild(this.createBlockElement(nestedBlock));
+        });
+    }
+    
+    div.appendChild(thenContainer);
+    div.appendChild(elseContainer);
+}
+
         return div;
     }
 

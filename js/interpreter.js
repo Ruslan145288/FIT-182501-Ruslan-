@@ -135,36 +135,39 @@ class Interpreter {
     }
 
     executeIf(block, variables) {
-        let conditionResult;
-        if (block.data.logicalOp) {
-            conditionResult = this.evaluateLogical(
-                this.evaluateExpression(block.data.leftExpr, variables),
-                this.evaluateExpression(block.data.rightExpr, variables),
-                block.data.logicalOp
-            );
-        } else {
-            const leftValue = this.evaluateExpression(block.data.leftExpr, variables);
-            const rightValue = this.evaluateExpression(block.data.rightExpr, variables);
-            const operator = block.data.operator;
+    let conditionResult;
+    
+    const leftValue = this.evaluateExpression(block.data.leftExpr, variables);
+    const rightValue = this.evaluateExpression(block.data.rightExpr, variables);
+    const operator = block.data.operator;
 
-            switch (operator) {
-                case '>': conditionResult = leftValue > rightValue; break;
-                case '<': conditionResult = leftValue < rightValue; break;
-                case '==': conditionResult = leftValue == rightValue; break;
-                case '!=': conditionResult = leftValue != rightValue; break;
-                case '>=': conditionResult = leftValue >= rightValue; break;
-                case '<=': conditionResult = leftValue <= rightValue; break;
-            }
+    switch (operator) {
+        case '>': conditionResult = leftValue > rightValue; break;
+        case '<': conditionResult = leftValue < rightValue; break;
+        case '==': conditionResult = leftValue == rightValue; break;
+        case '!=': conditionResult = leftValue != rightValue; break;
+        case '>=': conditionResult = leftValue >= rightValue; break;
+        case '<=': conditionResult = leftValue <= rightValue; break;
+    }
+
+    this.output.push(`> Проверка условия: ${leftValue} ${operator} ${rightValue} = ${conditionResult}`);
+
+    if (conditionResult) {
+        this.output.push(`> Условие ИСТИНА, выполняем блок then`);
+        if (block.nestedBlocks && block.nestedBlocks.then) {
+            block.nestedBlocks.then.forEach(nestedBlock => {
+                this.executeBlock(nestedBlock, { variables });
+            });
         }
-
-        this.output.push(`> Проверка условия: ${conditionResult}`);
-
-        if (conditionResult && block.nestedBlocks) {
-            block.nestedBlocks.forEach(nestedBlock => {
+    } else {
+        this.output.push(`> Условие ЛОЖЬ, выполняем блок else`);
+        if (block.nestedBlocks && block.nestedBlocks.else) {
+            block.nestedBlocks.else.forEach(nestedBlock => {
                 this.executeBlock(nestedBlock, { variables });
             });
         }
     }
+}
 
     executeWhile(block, variables) {
         let iterations = 0;

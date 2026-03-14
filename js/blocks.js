@@ -51,9 +51,11 @@ class BlockManager {
                 break;
                 
             case BlockTypes.IF:
-                if (!block.data.leftExpr || !block.data.rightExpr || !block.data.operator) {
-                    throw new Error('Неполный блок If');
-                }
+                newBlock = blockManager.createBlock(BlockTypes.IF, { 
+                    leftExpr: '', 
+                    operator: '>', 
+                    rightExpr: '' 
+                }, { then: [], else: [] }); // теперь nestedBlocks - объект
                 break;
                 
             case BlockTypes.WHILE:
