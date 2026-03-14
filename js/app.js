@@ -81,6 +81,24 @@ function handleDrop(e) {
             newBlock = blockManager.createBlock(BlockTypes.ASSIGNMENT, { variable: '', expression: '' });
             console.log('✅ Создан блок присваивания:', newBlock);
             break;
+
+        case 'array-decl':
+            newBlock = blockManager.createBlock(BlockTypes.ARRAY_DECL, { 
+                name: '', 
+                size: '5',
+                initValue: '0' 
+            });
+            console.log('✅ Создан блок массива:', newBlock);
+            break;
+    
+        case 'array-assign':
+            newBlock = blockManager.createBlock(BlockTypes.ARRAY_ASSIGN, { 
+                arrayName: '', 
+                index: '0', 
+                value: '' 
+            });
+            console.log('✅ Создан блок присваивания массиву:', newBlock);
+            break;
             
         case 'if':             
             newBlock = blockManager.createBlock(BlockTypes.IF, { 

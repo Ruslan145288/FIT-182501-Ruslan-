@@ -113,6 +113,8 @@ if (block.type === BlockTypes.WHILE) {
             [BlockTypes.IF]: 'if-block',
             [BlockTypes.LOGICAL]: 'logical',
             [BlockTypes.WHILE]: 'while-block',
+            [BlockTypes.ARRAY_DECL]: 'array-decl',  
+            [BlockTypes.ARRAY_ASSIGN]: 'array-assign',
             [BlockTypes.ARITHMETIC]: 'arithmetic'
         };
         return classes[type] || '';
@@ -125,6 +127,8 @@ if (block.type === BlockTypes.WHILE) {
             [BlockTypes.IF]: '🔀 Условный оператор If',
             [BlockTypes.LOGICAL]: '🔣 Логический оператор',
             [BlockTypes.WHILE]: '🔄 Цикл While',
+            [BlockTypes.ARRAY_DECL]: '📊 Объявление массива',
+            [BlockTypes.ARRAY_ASSIGN]: '📝 Присваивание элементу'
             [BlockTypes.ARITHMETIC]: '🧮 Арифметическая операция'
         };
         return titles[type] || 'Блок';
@@ -225,6 +229,36 @@ if (block.type === BlockTypes.WHILE) {
                     container.appendChild(preview);
                 }
                 break;
+
+            case BlockTypes.ARRAY_DECL:
+                container.innerHTML = `
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <input type="text" placeholder="имя" value="${block.data.name || ''}" 
+                               onchange="uiManager.updateBlockData(${block.id}, 'name', this.value)" style="width:80px">
+                        <span>[</span>
+                        <input type="text" placeholder="размер" value="${block.data.size || '5'}" 
+                               onchange="uiManager.updateBlockData(${block.id}, 'size', this.value)" style="width:60px">
+                        <span>] = </span>
+                        <input type="text" placeholder="значение" value="${block.data.initValue || '0'}" 
+                               onchange="uiManager.updateBlockData(${block.id}, 'initValue', this.value)" style="width:80px">
+                     </div>
+                  `;
+                  break;
+
+            case BlockTypes.ARRAY_ASSIGN:
+                container.innerHTML = `
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        <input type="text" placeholder="массив" value="${block.data.arrayName || ''}" 
+                               onchange="uiManager.updateBlockData(${block.id}, 'arrayName', this.value)" style="width:80px">
+                        <span>[</span>
+                        <input type="text" placeholder="индекс" value="${block.data.index || '0'}" 
+                               onchange="uiManager.updateBlockData(${block.id}, 'index', this.value)" style="width:60px">
+                        <span>] = </span>
+                        <input type="text" placeholder="значение" value="${block.data.value || ''}" 
+                               onchange="uiManager.updateBlockData(${block.id}, 'value', this.value)" style="width:100px">
+                     </div>
+                 `;
+                 break;                             
         }
         
         return container;
