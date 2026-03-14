@@ -10,41 +10,154 @@ class UIManager {
         this.blockManager.blocks.forEach(block => {
             this.programArea.appendChild(this.createBlockElement(block));
         });
-   
-        this.makeBlocksDraggable();
-    
-        if (typeof setupNestedDropZones === 'function') {
-            setupNestedDropZones();
-        }
+        this.makeBlocksDraggable(); // ← ВАЖНО: добавляем эту строку
+        this.highlightErrors();
     }
 
     makeBlocksDraggable() {
         document.querySelectorAll('.program-block').forEach(block => {
             block.setAttribute('draggable', 'true');
             
+            // Удаляем старые обработчики перед добавлением новых
+            block.removeEventListener('dragstart', this.handleDragStart);
+            block.removeEventListener('dragend', this.handleDragEnd);
+            
             block.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', block.dataset.blockId);
+                const blockId = block.dataset.blockId;
+                e.dataTransfer.setData('text/plain', blockId);
                 e.dataTransfer.effectAllowed = 'move';
                 block.classList.add('dragging');
                 
-               
                 const deleteZone = document.getElementById('deleteZone');
                 if (deleteZone) deleteZone.classList.add('show');
+                
+                e.dataTransfer.setData('fromY', e.clientY.toString());
             });
             
             block.addEventListener('dragend', (e) => {
                 block.classList.remove('dragging');
                 
-              
                 const deleteZone = document.getElementById('deleteZone');
                 if (deleteZone) deleteZone.classList.remove('show');
             });
         });
     }
 
+    setupDropZones() {
+        // Основная область
+        this.programArea.addEventListener('dragover', (e) => e.preventDefault());
+        
+        this.programArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const data = e.dataTransfer.getData('text/plain');
+            
+            console.log('Drop в основную область:', data);
+            
+            if (data && isNaN(parseInt(data))) {
+                this.createBlockFromPalette(data);
+                return;
+            }
+            
+            if (data && !isNaN(parseInt(data))) {
+                const blockId = parseInt(data);
+                const slot = e.target.closest('.nested-slot');
+                
+                if (slot) {
+                    const parentId = parseInt(slot.dataset.parentId);
+                    if (!isNaN(parentId)) {
+                        this.moveBlockToParent(blockId, parentId);
+                        return;
+                    }
+                }
+                
+                this.moveBlock(blockId, e.clientY);
+            }
+        });
+
+        // Слоты для вложенных блоков
+        document.addEventListener('dragover', (e) => {
+            const slot = e.target.closest('.nested-slot');
+            if (slot) {
+                e.preventDefault();
+                slot.classList.add('drag-over');
+            }
+        });
+
+        document.addEventListener('dragleave', (e) => {
+            const slot = e.target.closest('.nested-slot');
+            if (slot) {
+                slot.classList.remove('drag-over');
+            }
+        });
+    }
+
+    moveBlockToParent(blockId, parentId) {
+        console.log('Перемещение в родителя:', blockId, '->', parentId);
+        const success = this.blockManager.moveBlockToParent(blockId, parentId);
+        if (success) {
+            this.renderBlocks();
+        }
+    }
+
+    moveBlock(blockId, mouseY) {
+        console.log('Перемещение блока:', blockId, 'позиция Y:', mouseY);
+        
+        const block = this.blockManager.getBlock(blockId);
+        if (!block) return;
+        
+        const allBlocks = [...this.programArea.querySelectorAll('.program-block')];
+        const blocks = allBlocks.filter(b => parseInt(b.dataset.blockId) !== blockId);
+        
+        let index = blocks.length;
+        
+        for (let i = 0; i < blocks.length; i++) {
+            const rect = blocks[i].getBoundingClientRect();
+            if (mouseY < rect.top + rect.height / 2) {
+                index = i;
+                break;
+            }
+        }
+        
+        console.log('Индекс вставки:', index);
+        
+        const currentIndex = this.blockManager.blocks.findIndex(b => b.id === blockId);
+        if (currentIndex !== -1) {
+            if (index === currentIndex || index === currentIndex + 1) {
+                console.log('Позиция не изменилась, пропускаем');
+                return;
+            }
+        }
+        
+        const success = this.blockManager.moveBlockToMain(blockId, index);
+        if (success) {
+            this.renderBlocks();
+        }
+    }
+
+    createBlockFromPalette(type) {
+        console.log('Создание блока из палитры:', type);
+        let newBlock;
+        switch(type) {
+            case 'variable-decl':
+                newBlock = this.blockManager.createBlock('variable', { names: '' });
+                break;
+            case 'assignment':
+                newBlock = this.blockManager.createBlock('assignment', { variable: '', expression: '' });
+                break;
+            case 'if':
+                newBlock = this.blockManager.createBlock('if', { condition: '' });
+                break;
+            case 'arithmetic':
+                newBlock = this.blockManager.createBlock('arithmetic', { expression: '' });
+                break;
+        }
+        if (newBlock) this.renderBlocks();
+    }
+
     createBlockElement(block) {
         const div = document.createElement('div');
-        div.className = `program-block ${this.getBlockClass(block.type)}`;
+        div.className = `program-block ${block.type}-block`;
+        if (block.error) div.classList.add('block-error');
         div.dataset.blockId = block.id;
 
         const header = document.createElement('div');
@@ -52,8 +165,7 @@ class UIManager {
         header.innerHTML = `
             <span>${this.getBlockTitle(block.type)}</span>
             <div class="block-actions">
-                <button onclick="uiManager.editBlock(${block.id})">✏️</button>
-                <button onclick="uiManager.deleteBlock(${block.id})">🗑️</button>
+                <button onclick="uiManager.deleteBlock(${block.id})" title="Удалить">🗑️</button>
             </div>
         `;
 
@@ -63,205 +175,102 @@ class UIManager {
 
         div.appendChild(header);
         div.appendChild(content);
-
-if (block.type === BlockTypes.IF) {
-    const thenContainer = document.createElement('div');
-    thenContainer.className = 'nested-blocks then-blocks';
-    thenContainer.innerHTML = '<div class="nested-label">✅ THEN:</div>';
-    thenContainer.id = `then-${block.id}`;
-    
-    const elseContainer = document.createElement('div');
-    elseContainer.className = 'nested-blocks else-blocks';
-    elseContainer.innerHTML = '<div class="nested-label">❌ ELSE:</div>';
-    elseContainer.id = `else-${block.id}`;
-    
-    if (block.nestedBlocks && block.nestedBlocks.then) {
-        block.nestedBlocks.then.forEach(nestedBlock => {
-            thenContainer.appendChild(this.createBlockElement(nestedBlock));
-        });
-    }
-    
-    if (block.nestedBlocks && block.nestedBlocks.else) {
-        block.nestedBlocks.else.forEach(nestedBlock => {
-            elseContainer.appendChild(this.createBlockElement(nestedBlock));
-        });
-    }
-    
-    div.appendChild(thenContainer);
-    div.appendChild(elseContainer);
-}
-
-if (block.type === BlockTypes.WHILE) {
-    const bodyContainer = document.createElement('div');
-    bodyContainer.className = 'nested-blocks while-body';
-    bodyContainer.innerHTML = '<div class="nested-label">🔄 Тело цикла:</div>';
-    bodyContainer.id = `while-${block.id}`;
-    
-    if (block.nestedBlocks) {
-        block.nestedBlocks.forEach(nestedBlock => {
-            bodyContainer.appendChild(this.createBlockElement(nestedBlock));
-        });
-    }
-    
-    div.appendChild(bodyContainer);
-}
+        
+        if (block.error) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'block-error-message';
+            errorDiv.textContent = '❌ ' + block.error;
+            div.appendChild(errorDiv);
+        }
 
         return div;
     }
 
-    getBlockClass(type) {
-        const classes = {
-            [BlockTypes.VARIABLE]: 'variable-decl',
-            [BlockTypes.ASSIGNMENT]: 'assignment',
-            [BlockTypes.IF]: 'if-block',
-            [BlockTypes.LOGICAL]: 'logical',
-            [BlockTypes.WHILE]: 'while-block',
-            [BlockTypes.ARRAY_DECL]: 'array-decl',  
-            [BlockTypes.ARRAY_ASSIGN]: 'array-assign',
-            [BlockTypes.ARITHMETIC]: 'arithmetic'
-        };
-        return classes[type] || '';
-    }
-
     getBlockTitle(type) {
         const titles = {
-            [BlockTypes.VARIABLE]: '📦 Объявление переменной',
-            [BlockTypes.ASSIGNMENT]: '📝 Присваивание',
-            [BlockTypes.IF]: '🔀 Условный оператор If',
-            [BlockTypes.LOGICAL]: '🔣 Логический оператор',
-            [BlockTypes.WHILE]: '🔄 Цикл While',
-            [BlockTypes.ARRAY_DECL]: '📊 Объявление массива',
-            [BlockTypes.ARRAY_ASSIGN]: '📝 Присваивание элементу',
-            [BlockTypes.ARITHMETIC]: '🧮 Арифметическая операция',
+            'variable': '📦 Объявление переменных',
+            'assignment': '📝 Присваивание',
+            'if': '🔀 Если',
+            'arithmetic': '🧮 Арифметика'
         };
         return titles[type] || 'Блок';
     }
 
     createBlockContent(block) {
         const container = document.createElement('div');
+        container.style.width = '100%';
         
         switch(block.type) {
-            case BlockTypes.VARIABLE:
+            case 'variable':
                 container.innerHTML = `
-                    <input type="text" placeholder="имя1, имя2, ..." value="${block.data.names || ''}" 
+                    <input type="text" value="${block.data.names || ''}" 
+                           placeholder="x, y, z" 
                            onchange="uiManager.updateBlockData(${block.id}, 'names', this.value)">
                 `;
                 break;
                 
-            case BlockTypes.ASSIGNMENT:
+            case 'assignment':
                 container.innerHTML = `
-                    <input type="text" placeholder="переменная" value="${block.data.variable || ''}" 
-                           onchange="uiManager.updateBlockData(${block.id}, 'variable', this.value)" style="width:100px">
-                    <span>=</span>
-                    <input type="text" placeholder="выражение" value="${block.data.expression || ''}" 
-                           onchange="uiManager.updateBlockData(${block.id}, 'expression', this.value)" style="width:150px">
+                    <input type="text" value="${block.data.variable || ''}" 
+                           placeholder="x" style="width:60px"
+                           onchange="uiManager.updateBlockData(${block.id}, 'variable', this.value)">
+                    <span style="margin:0 5px;">=</span>
+                    <input type="text" value="${block.data.expression || ''}" 
+                           placeholder="5 + 3" style="width:100px"
+                           onchange="uiManager.updateBlockData(${block.id}, 'expression', this.value)">
                 `;
                 break;
                 
-            case BlockTypes.IF:
+            case 'if':
+                const ifDiv = document.createElement('div');
+                ifDiv.style.width = '100%';
+                
+                const conditionInput = document.createElement('input');
+                conditionInput.type = 'text';
+                conditionInput.value = block.data.condition || '';
+                conditionInput.placeholder = 'x > 5';
+                conditionInput.style.width = '100%';
+                conditionInput.style.marginBottom = '10px';
+                conditionInput.style.padding = '8px';
+                conditionInput.style.border = '2px solid #9c27b0';
+                conditionInput.style.borderRadius = '6px';
+                conditionInput.onchange = (e) => this.updateBlockData(block.id, 'condition', e.target.value);
+                
+                const hintDiv = document.createElement('div');
+                hintDiv.style.fontSize = '11px';
+                hintDiv.style.color = '#666';
+                hintDiv.style.marginBottom = '8px';
+                hintDiv.innerHTML = 'Операторы: <, >, <=, >=, ==, !=';
+                
+                const slot = document.createElement('div');
+                slot.className = 'nested-slot';
+                slot.dataset.parentId = block.id;
+                slot.style.marginLeft = '20px';
+                slot.style.padding = '10px';
+                slot.style.borderLeft = '3px solid #4caf50';
+                slot.style.background = '#f0f9f0';
+                slot.style.minHeight = '50px';
+                slot.style.borderRadius = '0 8px 8px 0';
+                
+                if (block.nestedBlocks && block.nestedBlocks.length > 0) {
+                    block.nestedBlocks.forEach(nested => {
+                        slot.appendChild(this.createBlockElement(nested));
+                    });
+                }
+                
+                ifDiv.appendChild(conditionInput);
+                ifDiv.appendChild(hintDiv);
+                ifDiv.appendChild(slot);
+                container.appendChild(ifDiv);
+                break;
+                
+            case 'arithmetic':
                 container.innerHTML = `
-                    <span>if (</span>
-                    <input type="text" placeholder="выражение" value="${block.data.leftExpr || ''}" 
-                           onchange="uiManager.updateBlockData(${block.id}, 'leftExpr', this.value)" style="width:100px">
-                    <select onchange="uiManager.updateBlockData(${block.id}, 'operator', this.value)">
-                        <option value=">" ${block.data.operator === '>' ? 'selected' : ''}>></option>
-                        <option value="<" ${block.data.operator === '<' ? 'selected' : ''}><</option>
-                        <option value="==" ${block.data.operator === '==' ? 'selected' : ''}>==</option>
-                        <option value="!=" ${block.data.operator === '!=' ? 'selected' : ''}>!=</option>
-                    </select>
-                    <input type="text" placeholder="выражение" value="${block.data.rightExpr || ''}" 
-                           onchange="uiManager.updateBlockData(${block.id}, 'rightExpr', this.value)" style="width:100px">
-                    <span>)</span>
+                    <input type="text" value="${block.data.expression || ''}" 
+                           placeholder="x = (y + 5) * 2" style="width:100%; padding:8px; font-family:monospace;"
+                           onchange="uiManager.updateBlockData(${block.id}, 'expression', this.value)">
                 `;
                 break;
-                
-            case BlockTypes.LOGICAL:
-                if (block.data.logicalOp === '!') {
-                    container.innerHTML = `
-                        <div class="logical-expression">
-                            <span class="logical-operator-badge">!</span>
-                            <input type="text" placeholder="выражение" value="${block.data.expr || ''}" 
-                                   onchange="uiManager.updateBlockData(${block.id}, 'expr', this.value)" style="width:150px">
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <div class="logical-expression">
-                            <input type="text" placeholder="выражение 1" value="${block.data.leftExpr || ''}" 
-                                   onchange="uiManager.updateBlockData(${block.id}, 'leftExpr', this.value)" style="width:120px">
-                            <span class="logical-operator-badge">${block.data.logicalOp || '&&'}</span>
-                            <input type="text" placeholder="выражение 2" value="${block.data.rightExpr || ''}" 
-                                   onchange="uiManager.updateBlockData(${block.id}, 'rightExpr', this.value)" style="width:120px">
-                        </div>
-                    `;
-                }
-                break;
-                
-            case BlockTypes.ARITHMETIC:
-                const arithmeticDiv = document.createElement('div');
-                arithmeticDiv.className = 'arithmetic-expression';
-    
-                const varInput = document.createElement('input');
-                varInput.type = 'text';
-                varInput.placeholder = 'переменная';
-                varInput.value = block.data.varName || '';
-                varInput.style.width = '90px';
-                varInput.onchange = (e) => this.updateBlockData(block.id, 'varName', e.target.value);
-    
-                const equalsSpan = document.createElement('span');
-                equalsSpan.textContent = '=';
-                equalsSpan.style.fontWeight = 'bold';
-    
-                const exprInput = document.createElement('input');
-                exprInput.type = 'text';
-                exprInput.placeholder = 'выражение (например: x + 5 * 2)';
-                exprInput.value = block.data.expression || '';
-                exprInput.style.width = '200px';
-                exprInput.className = 'arithmetic-input';
-                exprInput.onchange = (e) => this.updateBlockData(block.id, 'expression', e.target.value);
-    
-                arithmeticDiv.appendChild(varInput);
-                arithmeticDiv.appendChild(equalsSpan);
-                arithmeticDiv.appendChild(exprInput);
-                container.appendChild(arithmeticDiv);
-    
-                if (block.data.varName && block.data.expression) {
-                    const preview = document.createElement('div');
-                    preview.className = 'arithmetic-preview';
-                    preview.innerHTML = `📊 ${block.data.varName} = ${block.data.expression}`;
-                    container.appendChild(preview);
-                }
-                break;
-
-            case BlockTypes.ARRAY_DECL:
-                container.innerHTML = `
-                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                        <input type="text" placeholder="имя" value="${block.data.name || ''}" 
-                               onchange="uiManager.updateBlockData(${block.id}, 'name', this.value)" style="width:80px">
-                        <span>[</span>
-                        <input type="text" placeholder="размер" value="${block.data.size || '5'}" 
-                               onchange="uiManager.updateBlockData(${block.id}, 'size', this.value)" style="width:60px">
-                        <span>] = </span>
-                        <input type="text" placeholder="значение" value="${block.data.initValue || '0'}" 
-                               onchange="uiManager.updateBlockData(${block.id}, 'initValue', this.value)" style="width:80px">
-                     </div>
-                  `;
-                  break;
-
-            case BlockTypes.ARRAY_ASSIGN:
-                container.innerHTML = `
-                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                        <input type="text" placeholder="массив" value="${block.data.arrayName || ''}" 
-                               onchange="uiManager.updateBlockData(${block.id}, 'arrayName', this.value)" style="width:80px">
-                        <span>[</span>
-                        <input type="text" placeholder="индекс" value="${block.data.index || '0'}" 
-                               onchange="uiManager.updateBlockData(${block.id}, 'index', this.value)" style="width:60px">
-                        <span>] = </span>
-                        <input type="text" placeholder="значение" value="${block.data.value || ''}" 
-                               onchange="uiManager.updateBlockData(${block.id}, 'value', this.value)" style="width:100px">
-                     </div>
-                 `;
-                 break;                             
         }
         
         return container;
@@ -277,40 +286,42 @@ if (block.type === BlockTypes.WHILE) {
         this.updateVariablesDisplay();
     }
 
-    editBlock(blockId) {
-        const blockElement = document.querySelector(`[data-block-id="${blockId}"] input`);
-        if (blockElement) blockElement.focus();
-    }
-
-    highlightError() {
-        const firstBlock = document.querySelector('.program-block');
-        if (firstBlock) {
-            firstBlock.classList.add('error-highlight');
-            setTimeout(() => {
-                firstBlock.classList.remove('error-highlight');
-            }, 2000);
-        }
+    highlightErrors() {
+        this.blockManager.validateAllBlocks();
+        
+        document.querySelectorAll('.program-block').forEach(el => {
+            const blockId = parseInt(el.dataset.blockId);
+            const block = this.blockManager.getBlock(blockId);
+            
+            if (block && block.error) {
+                el.classList.add('error-highlight');
+                
+                if (!el.querySelector('.block-error-message')) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'block-error-message';
+                    errorDiv.textContent = '❌ ' + block.error;
+                    el.appendChild(errorDiv);
+                }
+            } else {
+                el.classList.remove('error-highlight');
+                const errorMsg = el.querySelector('.block-error-message');
+                if (errorMsg) errorMsg.remove();
+            }
+        });
     }
 
     updateVariablesDisplay() {
-        const variablesList = document.getElementById('variablesList');
-        variablesList.innerHTML = '';
-
+        const list = document.getElementById('variablesList');
+        list.innerHTML = '';
+        
         if (this.interpreter.variables.size === 0) {
-            variablesList.innerHTML = '<div class="variable-item">Нет объявленных переменных</div>';
+            list.innerHTML = '<div class="empty-state">Нет переменных</div>';
         } else {
             this.interpreter.variables.forEach((value, name) => {
                 const item = document.createElement('div');
                 item.className = 'variable-item';
-                
-                // Если значение - массив, отображаем его красиво
-                if (Array.isArray(value)) {
-                    item.textContent = `${name} = [${value.join(', ')}]`;
-                } else {
-                    item.textContent = `${name} = ${value}`;
-                }
-                
-                variablesList.appendChild(item);
+                item.textContent = `${name} = ${value}`;
+                list.appendChild(item);
             });
         }
     }
